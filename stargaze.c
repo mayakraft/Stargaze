@@ -60,11 +60,20 @@ void apparentSiderealTime(double J2000Day){
 	double L1 = mod360(218.3165 + 481267.8813 * t);
 	double e = mod360(23.439 - 0.0000004 * t);
 
+	double dp = -17.2*sin(Om) -1.32*sin(2*L) -0.23*sin(2*L1) +0.21*sin(2*Om);
+	double de =   9.2*cos(Om) +0.57*cos(2*L) + 0.1*cos(2*L1) -0.09 *cos(2*Om);
+	// e = eps + de;
+	 e = dp + de;
+
+	// double correction = dp * cos(e) / 15;
+	double correction = dp * cos(e) / 3600.0;
 }
 
 
 int main(){
-	double J2000 = daysInJ2000(2015, 3, 10, 12, 33, 10);
+	double J2000 = UTCDaysSinceJ2000(2015, 3, 10, 12, 33, 10);
+	meanSiderealTime(J2000, -8);
+	apparentSiderealTime(J2000);
 	printf("%f\n",J2000);
 	return 0;
 }
