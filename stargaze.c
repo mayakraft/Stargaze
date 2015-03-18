@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 // MATH
 
@@ -76,12 +77,19 @@ double apparentSiderealTime(double J2000Day){
 
 int main(){
 	int year, month, day, hour, minute, second;
-	year = 2015;
-	month = 3;
-	day = 18;
-	hour = 5;
-	minute = 20;
-	second = 0;
+	// year = 2015; month = 3; day = 18; hour = 5; minute = 20; second = 0;
+	time_t current;
+	time(&current);
+	struct tm GMT;
+	GMT = *gmtime(&current);
+	year = GMT.tm_year + 1900;
+	month = GMT.tm_mon + 1;
+	day = GMT.tm_mday;
+	hour = GMT.tm_hour;
+	minute = GMT.tm_min;
+	second = GMT.tm_sec;
+
+
 	// input year in UTC time
 	double J2000 = UTCDaysSinceJ2000(year, month, day, hour, minute, second);
 	// double sidereal = greenwichMeanSiderealTime(J2000);
