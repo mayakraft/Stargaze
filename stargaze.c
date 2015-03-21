@@ -3,6 +3,21 @@
 #include <stdio.h>
 #include <time.h>
 
+// struct mat3x3{
+// 	float *m00; float *m01; float *m02; 
+// 	float *m10; float *m11; float *m12; 
+// 	float *m20; float *m21; float *m22;
+// };
+// typedef struct mat3x3 mat3x3;
+
+
+struct mat3x3{
+	float a; float b; float c; 
+	float d; float e; float f; 
+	float g; float h; float i;
+};
+typedef struct mat3x3 mat3x3;
+
 // MATH
 
 double mod360(double input){
@@ -15,6 +30,24 @@ double mod360(double input){
 		return input - (n-1)*360;
 	}
 	return input;
+}
+
+// OPEN FRAMEWORKS
+ /*
+ * Multiply a 3x3 matrix with a 3x3 matrix
+ */
+mat3x3 mat3x3Mult(const mat3x3 A, const mat3x3 B) {
+	mat3x3 C;
+	C.a = A.a * B.a + A.b * B.d + A.c * B.g;
+	C.b = A.a * B.b + A.b * B.e + A.c * B.h;
+	C.c = A.a * B.c + A.b * B.f + A.c * B.i;
+	C.d = A.d * B.a + A.e * B.d + A.f * B.g;
+	C.e = A.d * B.b + A.e * B.e + A.f * B.h;
+	C.f = A.d * B.c + A.e * B.f + A.f * B.i;
+	C.g = A.g * B.a + A.h * B.d + A.i * B.g;
+	C.h = A.g * B.b + A.h * B.e + A.i * B.h;
+	C.i = A.g * B.c + A.h * B.f + A.i * B.i;
+	return C;
 }
 
 // ASTRONOMY
@@ -75,8 +108,54 @@ double apparentSiderealTime(double J2000Day){
 	return correction;
 }
 
+void rotation(float degrees, float x, float y, float z){
+
+}
+
+float earthRotation(){
+	float sidereal;
+	rotation(sidereal, 0, 0, 1);
+	rotation(23.4, 1, 0 ,0);
+	return 0.0f;
+} 
+
+int year, month, day, hour, minute, second;
+
+mat3x3 horizonalOrientation(float longitude, float latitude){
+	float axT = 23.4;
+	mat3x3 m;
+	m.a = 1.0f;		m.b = 0.0f;			m.c = 0.0f;
+	m.d = 0.0f;		m.e = cosf(axT);	m.f = -sinf(axT);
+	m.g = 0.0f;		m.h = sinf(axT);	m.i = cosf(axT);
+
+	double J2000 = UTCDaysSinceJ2000(year, month, day, hour, minute, second);
+	// double sidereal = greenwichMeanSiderealTime(J2000);
+	double sidereal = localMeanSiderealTime(J2000, -97.73);
+
+
+	mat3x3 r;
+	return r;
+}
+
+
+// your displacement from 0°N, 0°E, in the Gulf of Guinea off the coast of Africa, expressed a Rotation matrix.
+mat3x3 celestialOrientation(float longitude, float latitude){
+	float axT = 23.4;
+	mat3x3 m;
+	m.a = 1.0f;		m.b = 0.0f;			m.c = 0.0f;
+	m.d = 0.0f;		m.e = cosf(axT);	m.f = -sinf(axT);
+	m.g = 0.0f;		m.h = sinf(axT);	m.i = cosf(axT);
+
+	double J2000 = UTCDaysSinceJ2000(year, month, day, hour, minute, second);
+	// double sidereal = greenwichMeanSiderealTime(J2000);
+	double sidereal = localMeanSiderealTime(J2000, -97.73);
+
+
+	mat3x3 r;
+	return r;
+}
+
 int main(){
-	int year, month, day, hour, minute, second;
 	// year = 2015; month = 3; day = 18; hour = 5; minute = 20; second = 0;
 	time_t current;
 	time(&current);
