@@ -33,9 +33,8 @@ double mod360(double input){
 }
 
 // OPEN FRAMEWORKS
- /*
- * Multiply a 3x3 matrix with a 3x3 matrix
- */
+// Multiply a 3x3 matrix with a 3x3 matrix
+ 
 mat3x3 mat3x3Mult(const mat3x3 A, const mat3x3 B) {
 	mat3x3 C;
 	C.a = A.a * B.a + A.b * B.d + A.c * B.g;
@@ -119,27 +118,18 @@ float earthRotation(){
 	return 0.0f;
 } 
 
-int year, month, day, hour, minute, second;
-
 mat3x3 horizonalOrientation(float longitude, float latitude){
-	float axT = 23.4;
 	mat3x3 m;
-	m.a = 1.0f;		m.b = 0.0f;			m.c = 0.0f;
-	m.d = 0.0f;		m.e = cosf(axT);	m.f = -sinf(axT);
-	m.g = 0.0f;		m.h = sinf(axT);	m.i = cosf(axT);
-
-	double J2000 = UTCDaysSinceJ2000(year, month, day, hour, minute, second);
-	// double sidereal = greenwichMeanSiderealTime(J2000);
-	double sidereal = localMeanSiderealTime(J2000, -97.73);
-
-
-	mat3x3 r;
-	return r;
+	m.a = 1.0f;		m.b = 0.0f;		m.c = 0.0f;
+	m.d = 0.0f;		m.e = 1.0f;		m.f = 0.0f;
+	m.g = 0.0f;		m.h = 0.0f;		m.i = 1.0f;
+	return m;
 }
-
 
 // your displacement from 0°N, 0°E, in the Gulf of Guinea off the coast of Africa, expressed a Rotation matrix.
-mat3x3 celestialOrientation(float longitude, float latitude){
+mat3x3 celestialOrientation(float longitude, float latitude,
+							mat3x3 horizonalOrientation,
+							int year, int month, int day, int hour, int minute, int second){
 	float axT = 23.4;
 	mat3x3 m;
 	m.a = 1.0f;		m.b = 0.0f;			m.c = 0.0f;
@@ -150,11 +140,10 @@ mat3x3 celestialOrientation(float longitude, float latitude){
 	// double sidereal = greenwichMeanSiderealTime(J2000);
 	double sidereal = localMeanSiderealTime(J2000, -97.73);
 
-
 	mat3x3 r;
 	return r;
 }
-
+/*
 int main(){
 	// year = 2015; month = 3; day = 18; hour = 5; minute = 20; second = 0;
 	time_t current;
@@ -228,3 +217,4 @@ int main(){
 	return 0;
 }
 
+*/
