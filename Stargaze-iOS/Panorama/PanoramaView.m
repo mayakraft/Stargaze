@@ -132,7 +132,7 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
         [motionManager setShowsDeviceMovementDisplay:YES];
         NSLog(@"%d",motionManager.magnetometerActive);
         [motionManager startMagnetometerUpdates];
-        NSLog(@"SENSOR_ORIENTATION: %ld",SENSOR_ORIENTATION);
+        NSLog(@"SENSOR_ORIENTATION: %d",SENSOR_ORIENTATION);
         NSLog(@"showsDeviceMovementDisplay: %d",motionManager.showsDeviceMovementDisplay);
 //        motionManager.availableAttitudeReferenceFrames
         NSLog(@"bitmask %lu",(unsigned long)[CMMotionManager availableAttitudeReferenceFrames]);
@@ -187,35 +187,54 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
         glMultMatrixf(_attitudeMatrix.m);
     glRotatef(90, 0, 0, 1);
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, whiteColor);  // panorama at full color
-        [sphere execute];
+//        [sphere execute];
     
 //    GLKMatrix4 mat = GLKMatrix4MakeRotation(_latitude*DEG_TO_RAD, 0, 1, 0);
 //            mat = GLKMatrix4Rotate(mat, _latitude*DEG_TO_RAD, 0, 1, 0);
 //            mat = GLKMatrix4Rotate(mat, _longitude*DEG_TO_RAD, 0, 0, 1);
     
-    static float rotate = 0;
-    rotate += .2;
+    static float rotate = 0.0f;
+    rotate += .1;
+//    static float longitude = 0.0f;
+//    longitude -= .1;
     
-    [meridiansWhite execute];
+
     glPushMatrix();
-    
-    matrix = GLKMatrix4MakeRotation(30*DEG_TO_RAD, 0, 1, 0);
+    matrix = GLKMatrix4MakeRotation(90*DEG_TO_RAD, 0, 1, 0);
     glMultMatrixf(matrix.m);
-    [meridiansRed execute];
+    glPushMatrix();
+    matrix = GLKMatrix4MakeRotation(180*DEG_TO_RAD, 0, 0, 1);
+    glMultMatrixf(matrix.m);
+
+    glPushMatrix();
+
+    // apply the rotation of the planet, offset from GMT
+    matrix = GLKMatrix4MakeRotation(10*DEG_TO_RAD, 0, 1, 0);   // latitude
+    glMultMatrixf(matrix.m);
+
+//    matrix = GLKMatrix4MakeRotation(30*DEG_TO_RAD, 0, 1, 0);
+//    glMultMatrixf(matrix.m);
+//    [meridiansRed execute];
 
     glPushMatrix();
     
-    matrix = GLKMatrix4MakeRotation(-40*DEG_TO_RAD, 0, 0, 1);
+    matrix = GLKMatrix4MakeRotation(10*DEG_TO_RAD, 0, 0, 1);  // longitude
     glMultMatrixf(matrix.m);
-    [meridiansGreen execute];
+    
+//    matrix = GLKMatrix4MakeRotation(longitude*DEG_TO_RAD, 0, 0, 1);
+//    glMultMatrixf(matrix.m);
+//    [meridiansGreen execute];
+//    [meridiansRed execute];
 
         glPushMatrix();
-            matrix = GLKMatrix4MakeRotation(-23.4*DEG_TO_RAD, 1, 0, 0);   // latitude
-            glMultMatrixf(matrix.m);
-            [meridiansBlue execute];
+
+    matrix = GLKMatrix4MakeRotation(-rotate*DEG_TO_RAD, 0, 0, 1);  // earth rotation around it's magnetic pole
+    glMultMatrixf(matrix.m);
+    
             glPushMatrix();
-                matrix = GLKMatrix4MakeRotation(rotate*DEG_TO_RAD, 0, 0, 1);  // longitude
-                glMultMatrixf(matrix.m);
+    
+                [sphere execute];
+
                 [meridiansGold execute];
 
 //                glPushMatrix();
@@ -240,10 +259,22 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
 //                    glPopMatrix();
 //                glPopMatrix();
             glPopMatrix();
+            [meridiansBlue execute];
         glPopMatrix();
 
+    [meridiansGold execute];
+    
+    glPopMatrix();
+
+    [meridiansRed execute];
+
+    glPopMatrix();
+    
     glPopMatrix();
     glPopMatrix();
+
+    [meridiansWhite execute];
+
 
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, clearColor);
     
