@@ -22,6 +22,7 @@
 		D55E8FE31828D3F50076A9D7 /* 72.png in Resources */ = {isa = PBXBuildFile; fileRef = D55E8FDA1828D3F50076A9D7 /* 72.png */; };
 		D55E8FE41828D3F50076A9D7 /* 76.png in Resources */ = {isa = PBXBuildFile; fileRef = D55E8FDB1828D3F50076A9D7 /* 76.png */; };
 		D55E8FE51828D3F50076A9D7 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = D55E8FDC1828D3F50076A9D7 /* icon.png */; };
+		D57DC0911ADA7634004B18CE /* skyblue.png in Resources */ = {isa = PBXBuildFile; fileRef = D57DC0901ADA7634004B18CE /* skyblue.png */; };
 		D5B4EE361AC148EF004922EE /* equirectangular-projection-lines-blue.png in Resources */ = {isa = PBXBuildFile; fileRef = D5B4EE331AC148EF004922EE /* equirectangular-projection-lines-blue.png */; };
 		D5B4EE371AC148EF004922EE /* equirectangular-projection-lines-green.png in Resources */ = {isa = PBXBuildFile; fileRef = D5B4EE341AC148EF004922EE /* equirectangular-projection-lines-green.png */; };
 		D5B4EE381AC148EF004922EE /* equirectangular-projection-lines-red.png in Resources */ = {isa = PBXBuildFile; fileRef = D5B4EE351AC148EF004922EE /* equirectangular-projection-lines-red.png */; };
@@ -56,6 +57,7 @@
 		D55E8FDA1828D3F50076A9D7 /* 72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 72.png; sourceTree = "<group>"; };
 		D55E8FDB1828D3F50076A9D7 /* 76.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 76.png; sourceTree = "<group>"; };
 		D55E8FDC1828D3F50076A9D7 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
+		D57DC0901ADA7634004B18CE /* skyblue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = skyblue.png; sourceTree = "<group>"; };
 		D5B4EE331AC148EF004922EE /* equirectangular-projection-lines-blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "equirectangular-projection-lines-blue.png"; sourceTree = "<group>"; };
 		D5B4EE341AC148EF004922EE /* equirectangular-projection-lines-green.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "equirectangular-projection-lines-green.png"; sourceTree = "<group>"; };
 		D5B4EE351AC148EF004922EE /* equirectangular-projection-lines-red.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "equirectangular-projection-lines-red.png"; sourceTree = "<group>"; };
@@ -107,6 +109,7 @@
 			children = (
 				D5EC7AB8183AFBC400F62609 /* park_2048.jpg */,
 				D52253791ABEC675004DA3CD /* Tycho_2048_city.png */,
+				D57DC0901ADA7634004B18CE /* skyblue.png */,
 				D5B4EE331AC148EF004922EE /* equirectangular-projection-lines-blue.png */,
 				D5B4EE341AC148EF004922EE /* equirectangular-projection-lines-green.png */,
 				D5BA8B831AC4F54B00F26420 /* equirectangular-projection-lines-gold.png */,
@@ -237,6 +240,7 @@
 				D55E8FDF1828D3F50076A9D7 /* 144.png in Resources */,
 				D55E8FE11828D3F50076A9D7 /* 57.png in Resources */,
 				D5B4EE361AC148EF004922EE /* equirectangular-projection-lines-blue.png in Resources */,
+				D57DC0911ADA7634004B18CE /* skyblue.png in Resources */,
 				D55E8FE51828D3F50076A9D7 /* icon.png in Resources */,
 				D522537A1ABEC675004DA3CD /* Tycho_2048_city.png in Resources */,
 				D5EC7AB9183AFBC400F62609 /* park_2048.jpg in Resources */,

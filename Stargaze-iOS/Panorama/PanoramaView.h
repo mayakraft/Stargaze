@@ -18,10 +18,6 @@
 
 -(void) draw;  // place in GLKViewController's glkView:drawInRect:
 
-/// Set image by path or bundle - will check at both
--(void) setImage:(NSString*)fileName;
-
-
 /* orientation */
 
 /// forward vector axis (into the screen)
@@ -105,7 +101,7 @@
  * @param CGPoint screen coordinate
  * @return CGPoint image coordinate in pixels. If no image, between 0.0 and 1.0
  */
--(CGPoint) imagePixelAtScreenLocation:(CGPoint)point;
+//-(CGPoint) imagePixelAtScreenLocation:(CGPoint)point;
 
 /**
  * Hit-detection for all active touches

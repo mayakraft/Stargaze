@@ -20,7 +20,6 @@
 - (void)viewDidLoad{
     [super viewDidLoad];
     panoramaView = [[PanoramaView alloc] init];
-    [panoramaView setImage:@"Tycho_2048_city.png"];
     [panoramaView setOrientToDevice:YES];
     [panoramaView setTouchToPan:NO];
     [panoramaView setPinchToZoom:YES];
@@ -42,21 +41,13 @@
 }
 
 -(void) calculateOrientation{
+    
     // GET TIME
     int year, month, day, hour, minute, second;
-    time_t current;
-    time(&current);
-    struct tm GMT;
-    GMT = *gmtime(&current);
-    year = GMT.tm_year + 1900;
-    month = GMT.tm_mon + 1;
-    day = GMT.tm_mday;
-    hour = GMT.tm_hour;
-    minute = GMT.tm_min;
-    second = GMT.tm_sec;
-
+    getTime(&year, &month, &day, &hour, &minute, &second);
+    
     // input year in UTC time
-    double J2000 = UTCDaysSinceJ2000(year, month, day, hour, minute, second);
+    double J2000 = UTCDaysSinceJ2000();
     // double sidereal = greenwichMeanSiderealTime(J2000);
     double sidereal = localMeanSiderealTime(J2000, -97.73);
     double apparent = apparentSiderealTime(J2000);

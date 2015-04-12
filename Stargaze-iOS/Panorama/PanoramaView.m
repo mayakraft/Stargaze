@@ -42,7 +42,7 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
 @end
 
 @interface PanoramaView (){
-    Sphere *sphere, *meridiansBlue, *meridiansGreen, *meridiansRed, *meridiansWhite, *meridiansGold;
+    Sphere *stars, *sky, *meridiansBlue, *meridiansGreen, *meridiansRed, *meridiansWhite, *meridiansGold;
     CMMotionManager *motionManager;
     UIPinchGestureRecognizer *pinchGesture;
     UIPanGestureRecognizer *panGesture;
@@ -75,7 +75,8 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
     if (self) {
         [self initDevice];
         [self initOpenGL:context];
-        sphere = [[Sphere alloc] init:48 slices:48 radius:10.0 textureFile:nil];
+        stars = [[Sphere alloc] init:48 slices:48 radius:15.0 textureFile:@"Tycho_2048_city.png"];
+        sky = [[Sphere alloc] init:48 slices:48 radius:13.0 textureFile:@"skyblue.png"];
         meridiansBlue = [[Sphere alloc] init:48 slices:48 radius:6.0 textureFile:@"equirectangular-projection-lines-blue.png"];
         meridiansGreen = [[Sphere alloc] init:48 slices:48 radius:7.0 textureFile:@"equirectangular-projection-lines-green.png"];
         meridiansRed = [[Sphere alloc] init:48 slices:48 radius:8.0 textureFile:@"equirectangular-projection-lines-red.png"];
@@ -124,7 +125,7 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
     _fieldOfView = fieldOfView;
     [self rebuildProjectionMatrix];
 }
--(void) setImage:(NSString*)fileName{
+-(void) setImage:(NSString*)fileName Sphere:(Sphere*)sphere{
     [sphere swapTexture:fileName];
 }
 -(void) setTouchToPan:(BOOL)touchToPan{
@@ -181,7 +182,7 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
     glMatrixMode(GL_MODELVIEW);
 //    glEnable(GL_CULL_FACE);
 //    glCullFace(GL_FRONT);
-//    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -195,6 +196,7 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
 -(void)draw{
     static GLfloat whiteColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
     static GLfloat clearColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
+    static GLfloat halfClearColor[] = {1.0f, 1.0f, 1.0f, 0.5f};
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glPushMatrix(); // begin device orientation
@@ -212,7 +214,7 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
 //            mat = GLKMatrix4Rotate(mat, _latitude*DEG_TO_RAD, 0, 1, 0);
 //            mat = GLKMatrix4Rotate(mat, _longitude*DEG_TO_RAD, 0, 0, 1);
     
-    static float dayspin = 0.0f;
+    static float dayspin = 0;//270.0f;
     dayspin += .1;
 //    static float longitude = 0.0f;
 //    longitude -= .1;
@@ -254,10 +256,16 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
                 GLKMatrix4 matrix = GLKMatrix4MakeRotation(-dayspin*DEG_TO_RAD, 0, 0, 1);  // earth rotation around its north (magnetic) pole
                 glMultMatrixf(matrix.m);
                 glPushMatrix();
-                    [sphere execute];
-                    [meridiansGold execute];
+                    [stars execute];
+    
+    if((int)dayspin % 360 < 180){
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, clearColor);
+        [sky execute];
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, whiteColor);  // panorama at full color
+    }
+    
                 glPopMatrix();
-                [meridiansBlue execute];
+                [meridiansGold execute];
             glPopMatrix();
 //        [meridiansGold execute];
         [meridiansRed execute];
@@ -351,10 +359,10 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
     _lookAzimuth = atan2f(_lookVector.z, _lookVector.x);
     _lookAltitude = asinf(_lookVector.y);
 }
--(CGPoint) imagePixelAtScreenLocation:(CGPoint)point{
-    return [self imagePixelFromVector:[self vectorFromScreenLocation:point inAttitude:_attitudeMatrix]];
+-(CGPoint) imagePixelAtScreenLocation:(CGPoint)point Sphere:(Sphere*)sphere{
+    return [self imagePixelFromVector:[self vectorFromScreenLocation:point inAttitude:_attitudeMatrix] Sphere:sphere];
 }
--(CGPoint) imagePixelFromVector:(GLKVector3)vector{
+-(CGPoint) imagePixelFromVector:(GLKVector3)vector Sphere:(Sphere*)sphere{
     CGPoint pxl = CGPointMake((M_PI-atan2f(-vector.z, -vector.x))/(2*M_PI), acosf(vector.y)/M_PI);
     CGPoint tex = [sphere getTextureSize];
     // if no texture exists, returns between 0.0 - 1.0
@@ -411,18 +419,18 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
     _touches = event.allTouches;
     _numberOfTouches = 0;
 }
--(BOOL)touchInRect:(CGRect)rect{
-    if(_numberOfTouches){
-        bool found = false;
-        for(int i = 0; i < [[_touches allObjects] count]; i++){
-            CGPoint touchPoint = CGPointMake([(UITouch*)[[_touches allObjects] objectAtIndex:i] locationInView:self].x,
-                                             [(UITouch*)[[_touches allObjects] objectAtIndex:i] locationInView:self].y);
-            found |= CGRectContainsPoint(rect, [self imagePixelAtScreenLocation:touchPoint]);
-        }
-        return found;
-    }
-    return false;
-}
+//-(BOOL)touchInRect:(CGRect)rect{
+//    if(_numberOfTouches){
+//        bool found = false;
+//        for(int i = 0; i < [[_touches allObjects] count]; i++){
+//            CGPoint touchPoint = CGPointMake([(UITouch*)[[_touches allObjects] objectAtIndex:i] locationInView:self].x,
+//                                             [(UITouch*)[[_touches allObjects] objectAtIndex:i] locationInView:self].y);
+//            found |= CGRectContainsPoint(rect, [self imagePixelAtScreenLocation:touchPoint]);
+//        }
+//        return found;
+//    }
+//    return false;
+//}
 -(void)pinchHandler:(UIPinchGestureRecognizer*)sender{
     _numberOfTouches = sender.numberOfTouches;
     static float zoom;

@@ -1,6 +1,5 @@
 #include <math.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <time.h>
 
 // struct mat3x3{
@@ -10,6 +9,7 @@
 // };
 // typedef struct mat3x3 mat3x3;
 
+#define D2R 0.01745329251994 // degrees to radians
 
 struct mat3x3{
 	float a; float b; float c; 
@@ -51,8 +51,30 @@ mat3x3 mat3x3Mult(const mat3x3 A, const mat3x3 B) {
 
 // ASTRONOMY
 
+void getTime(int *year, int *month, int *day, int *hour, int *minute, int *second){
+	time_t current;
+	time(&current);
+	struct tm GMT;
+	GMT = *gmtime(&current);
+	*year = GMT.tm_year + 1900;
+	*month = GMT.tm_mon + 1;
+	*day = GMT.tm_mday;
+	*hour = GMT.tm_hour;
+	*minute = GMT.tm_min;
+	*second = GMT.tm_sec;
+}
+
 // time since january 1st, at 12:00 (noon)
-double UTCDaysSinceJ2000(int year, int month, int day, int hour, int minute, int second){
+double UTCDaysSinceJ2000(){
+	int year, month, day, hour, minute, second;
+	getTime(&year, &month, &day, &hour, &minute, &second);
+	double wholePart = 367*year-floor(7*(year+floor((month+9)/12.0))/4.0)+floor(275*month/9.0)+day-730531.5;
+	double fractionalPart = (hour + minute/60.0 + second/3600.0)/24.0;
+	return (double)wholePart + fractionalPart;
+}
+
+// time since january 1st, at 12:00 (noon)
+double UTCDaysSinceJ2000WithInput(int year, int month, int day, int hour, int minute, int second){
 	double wholePart = 367*year-floor(7*(year+floor((month+9)/12.0))/4.0)+floor(275*month/9.0)+day-730531.5;
 	double fractionalPart = (hour + minute/60.0 + second/3600.0)/24.0;
 	return (double)wholePart + fractionalPart;
@@ -118,6 +140,26 @@ float earthRotation(){
 	return 0.0f;
 } 
 
+
+mat3x3 phoneToHorizonal(){
+//90 degree rotation around Y (second axis)
+//180 degree rotation around Z (third axis)
+	mat3x3 m;
+	m.a = 0.0f;		m.b = 0.0f;		m.c = 1.0f;
+	m.d = 0.0f;		m.e = -1.0f;	m.f = 0.0f;
+	m.g = 1.0f;		m.h = 0.0f;		m.i = 0.0f;
+	return m;
+}
+
+mat3x3 latitudeLongitudeDisplacement(float latitude, float longitude){
+	mat3x3 m;
+	m.a = cosf(latitude*D2R)*cosf(longitude*D2R);		m.b = sinf(longitude*D2R);		m.c = -sinf(latitude*D2R)*cosf(longitude*D2R);
+	m.d = cosf(latitude*D2R)*-sinf(longitude*D2R);		m.e = cosf(longitude*D2R);	m.f = -sinf(latitude*D2R)*-sinf(longitude*D2R);
+	m.g = sinf(latitude*D2R);		m.h = 0.0f;		m.i = cosf(latitude*D2R);
+	return m;
+}
+
+
 mat3x3 horizonalOrientation(float longitude, float latitude){
 	mat3x3 m;
 	m.a = 1.0f;		m.b = 0.0f;		m.c = 0.0f;
@@ -136,85 +178,10 @@ mat3x3 celestialOrientation(float longitude, float latitude,
 	m.d = 0.0f;		m.e = cosf(axT);	m.f = -sinf(axT);
 	m.g = 0.0f;		m.h = sinf(axT);	m.i = cosf(axT);
 
-	double J2000 = UTCDaysSinceJ2000(year, month, day, hour, minute, second);
+	double J2000 = UTCDaysSinceJ2000();
 	// double sidereal = greenwichMeanSiderealTime(J2000);
 	double sidereal = localMeanSiderealTime(J2000, -97.73);
 
 	mat3x3 r;
 	return r;
 }
-/*
-int main(){
-	// year = 2015; month = 3; day = 18; hour = 5; minute = 20; second = 0;
-	time_t current;
-	time(&current);
-	struct tm GMT;
-	GMT = *gmtime(&current);
-	year = GMT.tm_year + 1900;
-	month = GMT.tm_mon + 1;
-	day = GMT.tm_mday;
-	hour = GMT.tm_hour;
-	minute = GMT.tm_min;
-	second = GMT.tm_sec;
-
-
-	// input year in UTC time
-	double J2000 = UTCDaysSinceJ2000(year, month, day, hour, minute, second);
-	// double sidereal = greenwichMeanSiderealTime(J2000);
-	double sidereal = localMeanSiderealTime(J2000, -97.73);
-	double apparent = apparentSiderealTime(J2000);
-	printf("%f\t(%d/%d/%d)\t(%d:%2d:%2d) S:%f  A:%f\n", J2000, month, day, year, hour, minute, second, sidereal, apparent);
-
-
-
-	// for(int i = 0; i < 24; i++){
-	// 	int month = 2;
-	// 	int day = 21;
-	// 	int hour = i;
-	// 	double J2000 = UTCDaysSinceJ2000(2015, month, day, hour, 0, 0);
-	// 	double sidereal = greenwichMeanSiderealTime(J2000);
-	// 	double apparent = apparentSiderealTime(J2000);
-	// 	printf("(%d/%d/2015)\t(%f)\t(%d:00):%f, %f\n",month + 1, day + 1, J2000, hour, sidereal, apparent);
-	// }
-
-	// printf("\n\n\n");
-
-	// for(int i = 0; i < 30; i++){
-	// 	int month = 2;
-	// 	int day = i;
-	// 	int hour = 0;
-	// 	double J2000 = UTCDaysSinceJ2000(2015, month, day, hour, 0, 0);
-	// 	double sidereal = greenwichMeanSiderealTime(J2000);
-	// 	double apparent = apparentSiderealTime(J2000);
-	// 	printf("(%d/%d/2015)\t(%f)\t(%d:00):%f, %f\n",month + 1, day + 1, J2000, hour, sidereal, apparent);
-	// }
-	// printf("\n\n\n");
-
-	// for(int i = 0; i < 12; i++){
-	// 	int month = i;
-	// 	int day = 21;
-	// 	int hour = 0;
-	// 	double J2000 = UTCDaysSinceJ2000(2015, month, day, hour, 0, 0);
-	// 	double sidereal = greenwichMeanSiderealTime(J2000);
-	// 	double apparent = apparentSiderealTime(J2000);
-	// 	printf("(%d/%d/2015)\t(%f)\t(%d:00):%f, %f\n",month + 1, day + 1, J2000, hour, sidereal, apparent);
-	// }
-
-	// printf("\n\n\n");
-
-	// int minute = 50;
-	// for(int i = 0; i < 10; i++){
-	// 	int month = 3;//rand()%12;
-	// 	int day = i+1;//rand()%28;
-	// 	int hour = 12;//rand()%24;
-	// 	minute -= 4;
-	// 	double J2000 = UTCDaysSinceJ2000(2015, month, day, hour, minute, 0);
-	// 	double sidereal = greenwichMeanSiderealTime(J2000);
-	// 	double apparent = apparentSiderealTime(J2000);
-	// 	printf("(%d/%d/2015)\t(%f)\t(%d:%d):%f, %f\n",month + 1, day + 1, J2000, hour, minute, sidereal, apparent);
-	// }
-	
-	return 0;
-}
-
-*/
