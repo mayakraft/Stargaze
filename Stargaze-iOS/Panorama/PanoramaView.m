@@ -81,6 +81,20 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
         meridiansRed = [[Sphere alloc] init:48 slices:48 radius:8.0 textureFile:@"equirectangular-projection-lines-red.png"];
         meridiansGold = [[Sphere alloc] init:48 slices:48 radius:8.0 textureFile:@"equirectangular-projection-lines-gold.png"];
         meridiansWhite = [[Sphere alloc] init:48 slices:48 radius:9.0 textureFile:@"equirectangular-projection-lines.png"];
+        
+        float longitude = 90;
+        float latitude = 30;
+        GLKMatrix4 matrix = GLKMatrix4MakeRotation((30)*DEG_TO_RAD, 0, 1, 0);   // latitude
+//            glMultMatrixf(matrix.m);
+        [self logMatrix:matrix];
+        matrix = GLKMatrix4Rotate(matrix, 10*DEG_TO_RAD, 0, 0, 1);
+        [self logMatrix:matrix];
+        matrix = GLKMatrix4Make(
+                                cosf(latitude*DEG_TO_RAD)*cosf(longitude*DEG_TO_RAD), cosf(latitude*DEG_TO_RAD)*sinf(longitude*DEG_TO_RAD), -sinf(latitude*DEG_TO_RAD), 0,
+                                -sinf(longitude*DEG_TO_RAD), cosf(longitude*DEG_TO_RAD), 0, 0,
+                                sinf(latitude*DEG_TO_RAD)*cosf(longitude*DEG_TO_RAD), sinf(latitude*DEG_TO_RAD)*sinf(longitude*DEG_TO_RAD), cosf(latitude*DEG_TO_RAD), 0,
+                                0, 0, 0, 1);
+
     }
     return self;
 }
@@ -171,14 +185,19 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
+-(void) logMatrix:(GLKMatrix4)m{
+    NSLog(@"\n[ %.2f  %.2f  %.2f  %.2f ]\n[ %.2f  %.2f  %.2f  %.2f ]\n[ %.2f  %.2f  %.2f  %.2f ]\n[ %.2f  %.2f  %.2f  %.2f ]\n",
+          m.m00, m.m01, m.m02, m.m03,
+          m.m10, m.m11, m.m12, m.m13,
+          m.m20, m.m21, m.m22, m.m23,
+          m.m30, m.m31, m.m32, m.m33);
+}
 -(void)draw{
     static GLfloat whiteColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
     static GLfloat clearColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glPushMatrix(); // begin device orientation
-
-    GLKMatrix4 matrix;
     
         _attitudeMatrix = GLKMatrix4Multiply([self getDeviceOrientationMatrix], _offsetMatrix);
         [self updateLook];
@@ -193,84 +212,56 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
 //            mat = GLKMatrix4Rotate(mat, _latitude*DEG_TO_RAD, 0, 1, 0);
 //            mat = GLKMatrix4Rotate(mat, _longitude*DEG_TO_RAD, 0, 0, 1);
     
-    static float rotate = 0.0f;
-    rotate += .1;
+    static float dayspin = 0.0f;
+    dayspin += .1;
 //    static float longitude = 0.0f;
 //    longitude -= .1;
     
-
-    glPushMatrix();
-    matrix = GLKMatrix4MakeRotation(90*DEG_TO_RAD, 0, 1, 0);
-    glMultMatrixf(matrix.m);
-    glPushMatrix();
-    matrix = GLKMatrix4MakeRotation(180*DEG_TO_RAD, 0, 0, 1);
-    glMultMatrixf(matrix.m);
-
-    glPushMatrix();
-
-    // apply the rotation of the planet, offset from GMT
-    matrix = GLKMatrix4MakeRotation(10*DEG_TO_RAD, 0, 1, 0);   // latitude
-    glMultMatrixf(matrix.m);
-
-//    matrix = GLKMatrix4MakeRotation(30*DEG_TO_RAD, 0, 1, 0);
-//    glMultMatrixf(matrix.m);
-//    [meridiansRed execute];
-
-    glPushMatrix();
+    static float longitude = 90;
+    static float latitude = 30;
     
-    matrix = GLKMatrix4MakeRotation(10*DEG_TO_RAD, 0, 0, 1);  // longitude
-    glMultMatrixf(matrix.m);
-    
-//    matrix = GLKMatrix4MakeRotation(longitude*DEG_TO_RAD, 0, 0, 1);
-//    glMultMatrixf(matrix.m);
-//    [meridiansGreen execute];
-//    [meridiansRed execute];
+    GLKMatrix4 phoneToHorizonal = GLKMatrix4Make(0, 0, 1, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
+//phoneToHorizonal = GLKMatrix4MakeRotation(90*DEG_TO_RAD, 0, 1, 0);
+//phoneToHorizonal = GLKMatrix4Rotate(phoneToHorizonal, 180*DEG_TO_RAD, 0, 0, 1);
 
+    GLKMatrix4 equatorPMToLatitudeLongitude = GLKMatrix4Make(
+                            cosf(latitude*DEG_TO_RAD)*cosf(longitude*DEG_TO_RAD), sinf(longitude*DEG_TO_RAD), -sinf(latitude*DEG_TO_RAD)*cosf(longitude*DEG_TO_RAD), 0,
+                            cosf(latitude*DEG_TO_RAD)*-sinf(longitude*DEG_TO_RAD), cosf(longitude*DEG_TO_RAD), -sinf(latitude*DEG_TO_RAD)*-sinf(longitude*DEG_TO_RAD), 0,
+                            sinf(latitude*DEG_TO_RAD), 0, cosf(latitude*DEG_TO_RAD), 0,
+                            0, 0, 0, 1);
+    glPushMatrix();
+        // twist and rotate from iphone to horizonal coordinate system
+//        phoneToHorizonal = GLKMatrix4MakeRotation(90*DEG_TO_RAD, 0, 1, 0);
+//        glMultMatrixf(matrix.m);
+//        phoneToHorizonal = GLKMatrix4Rotate(phoneToHorizonal, 180*DEG_TO_RAD, 0, 0, 1);
+//        matrix = GLKMatrix4MakeRotation(180*DEG_TO_RAD, 0, 0, 1);
+        glMultMatrixf(phoneToHorizonal.m);
         glPushMatrix();
-
-    matrix = GLKMatrix4MakeRotation(-rotate*DEG_TO_RAD, 0, 0, 1);  // earth rotation around it's magnetic pole
-    glMultMatrixf(matrix.m);
+            // offset your position on the planet, Latitude Longitude
+//            matrix = GLKMatrix4MakeRotation((latitude)*DEG_TO_RAD, 0, 1, 0);   // latitude
+//            glMultMatrixf(matrix.m);
+//            matrix = GLKMatrix4Rotate(matrix, longitude*DEG_TO_RAD, 0, 0, 1);  // longitude
+//    matrix = GLKMatrix4Make(
+//        cosf(latitude*DEG_TO_RAD)*cosf(longitude*DEG_TO_RAD), cosf(latitude*DEG_TO_RAD)*sinf(longitude*DEG_TO_RAD), -sinf(latitude*DEG_TO_RAD), 0,
+//        -sinf(longitude*DEG_TO_RAD), cosf(longitude*DEG_TO_RAD), 0, 0,
+//        sinf(latitude*DEG_TO_RAD)*cosf(longitude*DEG_TO_RAD), sinf(latitude*DEG_TO_RAD)*sinf(longitude*DEG_TO_RAD), cosf(latitude*DEG_TO_RAD), 0,
+//        0, 0, 0, 1);
     
+
+            glMultMatrixf(equatorPMToLatitudeLongitude.m);
             glPushMatrix();
-    
-                [sphere execute];
-
-                [meridiansGold execute];
-
-//                glPushMatrix();
-//                    matrix = GLKMatrix4MakeRotation(30*DEG_TO_RAD, 0, 1, 0);
-//                    glMultMatrixf(matrix.m);
-//                    [meridiansRed execute];
-//                    glPushMatrix();
-//                        matrix = GLKMatrix4MakeRotation(40*DEG_TO_RAD, 0, 0, 1);
-//                        glMultMatrixf(matrix.m);
-//                        [meridiansWhite execute];
-//                    glPopMatrix();
-//                glPopMatrix();
-
-//                glPushMatrix();
-//                    matrix = GLKMatrix4MakeRotation(90*DEG_TO_RAD, 0, 1, 0);
-//                    glMultMatrixf(matrix.m);
-//                    [meridiansRed execute];
-//                    glPushMatrix();
-//                        matrix = GLKMatrix4MakeRotation(180*DEG_TO_RAD, 0, 0, 1);
-//                        glMultMatrixf(matrix.m);
-//                        [meridiansWhite execute];
-//                    glPopMatrix();
-//                glPopMatrix();
+                // apply the rotation of the planet, offset from GMT
+                GLKMatrix4 matrix = GLKMatrix4MakeRotation(-dayspin*DEG_TO_RAD, 0, 0, 1);  // earth rotation around its north (magnetic) pole
+                glMultMatrixf(matrix.m);
+                glPushMatrix();
+                    [sphere execute];
+                    [meridiansGold execute];
+                glPopMatrix();
+                [meridiansBlue execute];
             glPopMatrix();
-            [meridiansBlue execute];
+//        [meridiansGold execute];
+        [meridiansRed execute];
         glPopMatrix();
-
-    [meridiansGold execute];
-    
-    glPopMatrix();
-
-    [meridiansRed execute];
-
-    glPopMatrix();
-    
-    glPopMatrix();
     glPopMatrix();
 
     [meridiansWhite execute];
@@ -301,8 +292,10 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
     glPopMatrix(); // end device orientation
     static int count = 0;
     count++;
-    if(count % 10 == 0){
-        CMMagneticField data = motionManager.magnetometerData.magneticField;
+    if(count % 20 == 0){
+//        CMMagneticField data = motionManager.magnetometerData.magneticField;
+//        [self logMatrix:GLKMatrix4Multiply(_attitudeMatrix, phoneToHorizonal)];
+        [self logMatrix:_attitudeMatrix];
 //        NSLog(@"(%d)\t(%.3f, %.3f, %.3f)\t\t(%.3f, %.3f)\t(%.3f, %.3f, %.3f)",motionManager.magnetometerActive, _lookVector.x, _lookVector.y, _lookVector.z, _lookAzimuth, _lookAltitude, data.x, data.y, data.z);
     }
 }
