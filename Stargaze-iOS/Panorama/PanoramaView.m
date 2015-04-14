@@ -11,6 +11,8 @@
 #import <GLKit/GLKit.h>
 #import "PanoramaView.h"
 
+#include "stargaze.c"
+
 #define FPS 60
 #define FOV_MIN 1
 #define FOV_MAX 155
@@ -53,6 +55,20 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
 @end
 
 @implementation PanoramaView
+
+-(void) calculateOrientation{
+    
+    // GET TIME
+    int year, month, day, hour, minute, second;
+    getTime(&year, &month, &day, &hour, &minute, &second);
+    
+    // input year in UTC time
+    double J2000 = UTCDaysSinceJ2000();
+    // double sidereal = greenwichMeanSiderealTime(J2000);
+    double sidereal = localMeanSiderealTime(J2000, -97.73);
+    double apparent = apparentSiderealTime(J2000);
+    printf("%f\t(%d/%d/%d)\t(%d:%2d:%2d) S:%f  A:%f\n", J2000, month, day, year, hour, minute, second, sidereal, apparent);
+}
 
 -(id) init{
 // it appears that iOS already automatically does this switch, stored in UIScreen mainscreen bounds
@@ -222,7 +238,6 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
     static float longitude = 90;
     static float latitude = 30;
     
-    GLKMatrix4 phoneToHorizonal = GLKMatrix4Make(0, 0, 1, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
 //phoneToHorizonal = GLKMatrix4MakeRotation(90*DEG_TO_RAD, 0, 1, 0);
 //phoneToHorizonal = GLKMatrix4Rotate(phoneToHorizonal, 180*DEG_TO_RAD, 0, 0, 1);
 
@@ -237,7 +252,7 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
 //        glMultMatrixf(matrix.m);
 //        phoneToHorizonal = GLKMatrix4Rotate(phoneToHorizonal, 180*DEG_TO_RAD, 0, 0, 1);
 //        matrix = GLKMatrix4MakeRotation(180*DEG_TO_RAD, 0, 0, 1);
-        glMultMatrixf(phoneToHorizonal.m);
+        glMultMatrixf(phoneToHorizonal4x4);
         glPushMatrix();
             // offset your position on the planet, Latitude Longitude
 //            matrix = GLKMatrix4MakeRotation((latitude)*DEG_TO_RAD, 0, 1, 0);   // latitude
@@ -258,17 +273,16 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
                 glPushMatrix();
                     [stars execute];
     
-    if((int)dayspin % 360 < 180){
-        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, clearColor);
-        [sky execute];
-        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, whiteColor);  // panorama at full color
-    }
+                    if((int)dayspin % 360 < 180){
+                        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, clearColor);
+                        [sky execute];
+                        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, whiteColor);  // panorama at full color
+                    }
     
                 glPopMatrix();
                 [meridiansGold execute];
             glPopMatrix();
-//        [meridiansGold execute];
-        [meridiansRed execute];
+        [meridiansBlue execute];
         glPopMatrix();
     glPopMatrix();
 
@@ -305,6 +319,7 @@ GLKQuaternion GLKQuaternionFromTwoVectors(GLKVector3 u, GLKVector3 v){
 //        [self logMatrix:GLKMatrix4Multiply(_attitudeMatrix, phoneToHorizonal)];
         [self logMatrix:_attitudeMatrix];
 //        NSLog(@"(%d)\t(%.3f, %.3f, %.3f)\t\t(%.3f, %.3f)\t(%.3f, %.3f, %.3f)",motionManager.magnetometerActive, _lookVector.x, _lookVector.y, _lookVector.z, _lookAzimuth, _lookAltitude, data.x, data.y, data.z);
+        [self calculateOrientation];
     }
 }
 #pragma mark- ORIENTATION

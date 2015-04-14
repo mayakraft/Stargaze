@@ -8,7 +8,7 @@
 
 #import "ViewController.h"
 #import "PanoramaView.h"
-#include "stargaze.c"
+
 
 @interface ViewController (){
     PanoramaView *panoramaView;
@@ -40,27 +40,13 @@
     [self setView:panoramaView];
 }
 
--(void) calculateOrientation{
-    
-    // GET TIME
-    int year, month, day, hour, minute, second;
-    getTime(&year, &month, &day, &hour, &minute, &second);
-    
-    // input year in UTC time
-    double J2000 = UTCDaysSinceJ2000();
-    // double sidereal = greenwichMeanSiderealTime(J2000);
-    double sidereal = localMeanSiderealTime(J2000, -97.73);
-    double apparent = apparentSiderealTime(J2000);
-    printf("%f\t(%d/%d/%d)\t(%d:%2d:%2d) S:%f  A:%f\n", J2000, month, day, year, hour, minute, second, sidereal, apparent);
-}
-
 -(void) glkView:(GLKView *)view drawInRect:(CGRect)rect{
     [panoramaView draw];
-    static int counter = 0;
-    counter++;
-    if(counter % 20 == 0){
-        [self calculateOrientation];
-    }
+//    static int counter = 0;
+//    counter++;
+//    if(counter % 20 == 0){
+//        [self calculateOrientation];
+//    }
 }
 
 @end

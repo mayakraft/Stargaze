@@ -11,12 +11,12 @@
 
 #define D2R 0.01745329251994 // degrees to radians
 
-struct mat3x3{
-	float a; float b; float c; 
-	float d; float e; float f; 
-	float g; float h; float i;
-};
-typedef struct mat3x3 mat3x3;
+// struct mat3x3{
+// 	float a; float b; float c; 
+// 	float d; float e; float f; 
+// 	float g; float h; float i;
+// };
+// typedef struct mat3x3 mat3x3;
 
 // MATH
 
@@ -35,19 +35,19 @@ double mod360(double input){
 // OPEN FRAMEWORKS
 // Multiply a 3x3 matrix with a 3x3 matrix
  
-mat3x3 mat3x3Mult(const mat3x3 A, const mat3x3 B) {
-	mat3x3 C;
-	C.a = A.a * B.a + A.b * B.d + A.c * B.g;
-	C.b = A.a * B.b + A.b * B.e + A.c * B.h;
-	C.c = A.a * B.c + A.b * B.f + A.c * B.i;
-	C.d = A.d * B.a + A.e * B.d + A.f * B.g;
-	C.e = A.d * B.b + A.e * B.e + A.f * B.h;
-	C.f = A.d * B.c + A.e * B.f + A.f * B.i;
-	C.g = A.g * B.a + A.h * B.d + A.i * B.g;
-	C.h = A.g * B.b + A.h * B.e + A.i * B.h;
-	C.i = A.g * B.c + A.h * B.f + A.i * B.i;
-	return C;
-}
+// mat3x3 mat3x3Mult(const mat3x3 A, const mat3x3 B) {
+// 	mat3x3 C;
+// 	C.a = A.a * B.a + A.b * B.d + A.c * B.g;
+// 	C.b = A.a * B.b + A.b * B.e + A.c * B.h;
+// 	C.c = A.a * B.c + A.b * B.f + A.c * B.i;
+// 	C.d = A.d * B.a + A.e * B.d + A.f * B.g;
+// 	C.e = A.d * B.b + A.e * B.e + A.f * B.h;
+// 	C.f = A.d * B.c + A.e * B.f + A.f * B.i;
+// 	C.g = A.g * B.a + A.h * B.d + A.i * B.g;
+// 	C.h = A.g * B.b + A.h * B.e + A.i * B.h;
+// 	C.i = A.g * B.c + A.h * B.f + A.i * B.i;
+// 	return C;
+// }
 
 // ASTRONOMY
 
@@ -140,6 +140,17 @@ float earthRotation(){
 	return 0.0f;
 } 
 
+float phoneToHorizonal3x3[9] = {
+	0.0f, 0.0f, 1.0f,
+	0.0f, -1.0f, 0.0f,
+	1.0f, 0.0f, 0.0f };
+
+float phoneToHorizonal4x4[16] = {
+	0.0f, 0.0f, 1.0f, 0.0f,
+	0.0f, -1.0f, 0.0f, 0.0f,
+	1.0f, 0.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 0.0f,1.0f, 
+};
 
 mat3x3 phoneToHorizonal(){
 //90 degree rotation around Y (second axis)
