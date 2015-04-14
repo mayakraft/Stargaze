@@ -6,7 +6,7 @@ these are the missing set of functions required to build stargazing apps on mobi
 
 # input
 
-your location on Earth, and the time of day
+your location on Earth, time, and day of year
 
 #output
 

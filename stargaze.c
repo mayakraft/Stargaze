@@ -2,21 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-// struct mat3x3{
-// 	float *m00; float *m01; float *m02; 
-// 	float *m10; float *m11; float *m12; 
-// 	float *m20; float *m21; float *m22;
-// };
-// typedef struct mat3x3 mat3x3;
-
 #define D2R 0.01745329251994 // degrees to radians
-
-// struct mat3x3{
-// 	float a; float b; float c; 
-// 	float d; float e; float f; 
-// 	float g; float h; float i;
-// };
-// typedef struct mat3x3 mat3x3;
 
 // MATH
 
@@ -32,22 +18,31 @@ double mod360(double input){
 	return input;
 }
 
+float* float9ToFloat16(float *a){
+	float *m = malloc(sizeof(float)*16);
+	m[0] = a[0];	m[1] = a[1];	m[2] = a[2];	m[3] = 0.0f;
+	m[4] = a[3];	m[5] = a[4];	m[6] = a[5];	m[7] = 0.0f;
+	m[8] = a[6];	m[9] = a[7];	m[10] = a[8];	m[11] = 0.0f;
+	m[12] = 0.0f;	m[13] = 0.0f;	m[14] = 0.0f;	m[15] = 1.0f;
+	return m;
+}
+
 // OPEN FRAMEWORKS
 // Multiply a 3x3 matrix with a 3x3 matrix
  
-// mat3x3 mat3x3Mult(const mat3x3 A, const mat3x3 B) {
-// 	mat3x3 C;
-// 	C.a = A.a * B.a + A.b * B.d + A.c * B.g;
-// 	C.b = A.a * B.b + A.b * B.e + A.c * B.h;
-// 	C.c = A.a * B.c + A.b * B.f + A.c * B.i;
-// 	C.d = A.d * B.a + A.e * B.d + A.f * B.g;
-// 	C.e = A.d * B.b + A.e * B.e + A.f * B.h;
-// 	C.f = A.d * B.c + A.e * B.f + A.f * B.i;
-// 	C.g = A.g * B.a + A.h * B.d + A.i * B.g;
-// 	C.h = A.g * B.b + A.h * B.e + A.i * B.h;
-// 	C.i = A.g * B.c + A.h * B.f + A.i * B.i;
-// 	return C;
-// }
+float* mat3x3Mult(const float* A, const float* B) {
+	float *C = malloc(sizeof(float)*9);
+	C[0] = A[0] * B[0] + A[1] * B[3] + A[2] * B[6];
+	C[1] = A[0] * B[1] + A[1] * B[4] + A[2] * B[7];
+	C[2] = A[0] * B[2] + A[1] * B[5] + A[2] * B[8];
+	C[3] = A[3] * B[0] + A[4] * B[3] + A[5] * B[6];
+	C[4] = A[3] * B[1] + A[4] * B[4] + A[5] * B[7];
+	C[5] = A[3] * B[2] + A[4] * B[5] + A[5] * B[8];
+	C[6] = A[6] * B[0] + A[7] * B[3] + A[8] * B[6];
+	C[7] = A[6] * B[1] + A[7] * B[4] + A[8] * B[7];
+	C[8] = A[6] * B[2] + A[7] * B[5] + A[8] * B[8];
+	return C;
+}
 
 // ASTRONOMY
 
@@ -140,6 +135,8 @@ float earthRotation(){
 	return 0.0f;
 } 
 
+//90 degree rotation around Y (second axis)
+//180 degree rotation around Z (third axis)
 float phoneToHorizonal3x3[9] = {
 	0.0f, 0.0f, 1.0f,
 	0.0f, -1.0f, 0.0f,
@@ -152,47 +149,27 @@ float phoneToHorizonal4x4[16] = {
 	0.0f, 0.0f, 0.0f,1.0f, 
 };
 
-mat3x3 phoneToHorizonal(){
-//90 degree rotation around Y (second axis)
-//180 degree rotation around Z (third axis)
-	mat3x3 m;
-	m.a = 0.0f;		m.b = 0.0f;		m.c = 1.0f;
-	m.d = 0.0f;		m.e = -1.0f;	m.f = 0.0f;
-	m.g = 1.0f;		m.h = 0.0f;		m.i = 0.0f;
-	return m;
-}
-
-mat3x3 latitudeLongitudeDisplacement(float latitude, float longitude){
-	mat3x3 m;
-	m.a = cosf(latitude*D2R)*cosf(longitude*D2R);		m.b = sinf(longitude*D2R);		m.c = -sinf(latitude*D2R)*cosf(longitude*D2R);
-	m.d = cosf(latitude*D2R)*-sinf(longitude*D2R);		m.e = cosf(longitude*D2R);	m.f = -sinf(latitude*D2R)*-sinf(longitude*D2R);
-	m.g = sinf(latitude*D2R);		m.h = 0.0f;		m.i = cosf(latitude*D2R);
+float* latitudeLongitudeDisplacement(float latitude, float longitude){
+	float *m = malloc(sizeof(float) * 9 );
+	m[0] = cosf(latitude*D2R)*cosf(longitude*D2R);      m[1] = sinf(longitude*D2R);     m[2] = -sinf(latitude*D2R)*cosf(longitude*D2R);
+	m[3] = cosf(latitude*D2R)*-sinf(longitude*D2R);     m[4] = cosf(longitude*D2R);     m[5] = -sinf(latitude*D2R)*-sinf(longitude*D2R);
+	m[6] = sinf(latitude*D2R);                          m[7] = 0.0f;                    m[8] = cosf(latitude*D2R);
 	return m;
 }
 
 
-mat3x3 horizonalOrientation(float longitude, float latitude){
-	mat3x3 m;
-	m.a = 1.0f;		m.b = 0.0f;		m.c = 0.0f;
-	m.d = 0.0f;		m.e = 1.0f;		m.f = 0.0f;
-	m.g = 0.0f;		m.h = 0.0f;		m.i = 1.0f;
-	return m;
+void horizonalOrientation(float longitude, float latitude){
+
 }
 
 // your displacement from 0°N, 0°E, in the Gulf of Guinea off the coast of Africa, expressed a Rotation matrix.
-mat3x3 celestialOrientation(float longitude, float latitude,
-							mat3x3 horizonalOrientation,
-							int year, int month, int day, int hour, int minute, int second){
+float* celestialOrientation(float longitude, float latitude, int year, int month, int day, int hour, int minute, int second){
 	float axT = 23.4;
-	mat3x3 m;
-	m.a = 1.0f;		m.b = 0.0f;			m.c = 0.0f;
-	m.d = 0.0f;		m.e = cosf(axT);	m.f = -sinf(axT);
-	m.g = 0.0f;		m.h = sinf(axT);	m.i = cosf(axT);
 
 	double J2000 = UTCDaysSinceJ2000();
 	// double sidereal = greenwichMeanSiderealTime(J2000);
 	double sidereal = localMeanSiderealTime(J2000, -97.73);
 
-	mat3x3 r;
+	float *r = malloc(sizeof(float) * 9);
 	return r;
 }
